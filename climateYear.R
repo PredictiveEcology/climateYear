@@ -53,9 +53,7 @@ doEvent.climateYear = function(sim, eventTime, eventType) {
   switch(
     eventType,
     init = {
-      ### check for more detailed object dependencies:
-      ### (use `checkObject` or similar)
-
+    
       # do stuff for this event
       sim <- Init(sim)
 
@@ -63,11 +61,15 @@ doEvent.climateYear = function(sim, eventTime, eventType) {
       sim <- scheduleEvent(sim, start(sim), "climateYear", "getClimate")
     },
     getClimate = {
-     sim$climateYear <- sampleYear(Time = time(sim), 
-                                   Available = names(sim$projectedClimateRasters[[1]]),
-                                   Starting = P(sim)$samplingStartYear,
-                                   Ending = P(sim)$samplingEndYear,
-                                   Range = P(sim)$samplingRange)
+      sim$climateYear <- sampleYear(Time = time(sim), 
+                                    Available = names(sim$projectedClimateRasters[[1]]),
+                                    Starting = P(sim)$samplingStartYear,
+                                    Ending = P(sim)$samplingEndYear,
+                                    Range = P(sim)$samplingRange)
+      sim$climateYearRecord <- rbind(sim$climateYearRecord, 
+                                     data.table(simYear = time(sim), 
+                                                climateYear = sim$climateYear))
+      
       sim <- scheduleEvent(sim, time(sim) + 1, "climateYear", "getClimate")
     },
     warning(noEventWarning(sim))
@@ -92,8 +94,6 @@ Save <- function(sim) {
   # ! ----- STOP EDITING ----- ! #
   return(invisible(sim))
 }
-
-
 
 sampleYear <- function(Range, Starting, Ending, Time, Available) {
   Available <- as.numeric(gsub("[^0-9]", "", Range))
@@ -123,9 +123,3 @@ sampleYear <- function(Range, Starting, Ending, Time, Available) {
   
   return(invisible(sim))
 }
-
-ggplotFn <- function(data, ...) {
-  ggplot2::ggplot(data, ggplot2::aes(TheSample)) +
-    ggplot2::geom_histogram(...)
-}
-
