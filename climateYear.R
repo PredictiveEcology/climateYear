@@ -63,22 +63,12 @@ doEvent.climateYear = function(sim, eventTime, eventType) {
       sim <- scheduleEvent(sim, start(sim), "climateYear", "getClimate")
     },
     getClimate = {
-      # ! ----- EDIT BELOW ----- ! #
-      # do stuff for this event
-     sim$climateYear <- sampleYear(range = P(sim)$samplingRange, 
-                                   start = P(sim)$samplingStartYear,
-                                   end = P(sim)$samplingEndYear,
-                                   time = time(sim), 
-                                   available = names(sim$projectedClimateRasters[[1]]))
-      # e.g., call your custom functions/methods here
-      # you can define your own methods below this `doEvent` function
-
-      # schedule future event(s)
-
-      # e.g.,
+     sim$climateYear <- sampleYear(Time = time(sim), 
+                                   Available = names(sim$projectedClimateRasters[[1]]),
+                                   Starting = P(sim)$samplingStartYear,
+                                   Ending = P(sim)$samplingEndYear,
+                                   Range = P(sim)$samplingRange)
       sim <- scheduleEvent(sim, time(sim) + 1, "climateYear", "getClimate")
-
-      # ! ----- STOP EDITING ----- ! #
     },
     warning(noEventWarning(sim))
   )
@@ -87,7 +77,7 @@ doEvent.climateYear = function(sim, eventTime, eventType) {
 
 ### template initialization
 Init <- function(sim) {
- 
+
  #make climateYearRecord
  sim$climateYearRecord <- data.table(simYear = numeric(0), climateYear = numeric(0)) 
  
@@ -104,8 +94,17 @@ Save <- function(sim) {
 }
 
 
-### template for your event1
-sampleYear <- function(range, start, end, time, available) {
+
+sampleYear <- function(Range, Starting, Ending, Time, Available) {
+  Available <- as.numeric(gsub("[^0-9]", "", Range))
+  Range <- Range[Range %in% Available]
+  if (Starting <= Time & Time <= Ending) {
+    theYear <- sample(Range, size = 1)
+  } else if (Time %in% Available) {
+    theYear <- Time
+  } else {
+    stop("climateYear does not have any available years?")
+  }
   
   return(theYear)
 }
