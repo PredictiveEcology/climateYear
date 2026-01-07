@@ -35,7 +35,7 @@ defineModule(sim, list(
   ),
   inputObjects = bindrows(
     #expectsInput("objectName", "objectClass", "input object description", sourceURL, ...),
-    expectsInput(objectName = "projectedClimateRasters", objectClass = list, 
+    expectsInput(objectName = "projectedClimateRasters", objectClass = "list", 
                  desc = paste("a list of SpatRasters, with layers corresponding to years.",
                               "Each list element should be a different variable with corresponding names.",
                               "Each layer should be named following the convention 'year<year>`, e.g. year2009.",
@@ -98,12 +98,16 @@ Save <- function(sim) {
 sampleYear <- function(Range, Starting, Ending, Time, Available) {
   Available <- as.numeric(gsub("[^0-9]", "", Range))
   Range <- Range[Range %in% Available]
-  if (Starting <= Time & Time <= Ending) {
-    theYear <- sample(Range, size = 1)
-  } else if (Time %in% Available) {
-    theYear <- Time
+  if (!is.na(Starting)){
+    if (Starting <= Time & Time <= Ending) {
+      theYear <- sample(Range, size = 1)
+    } else if (Time %in% Available) {
+      theYear <- Time
+    } else {
+      stop("climateYear does not have any available years?")
+    }
   } else {
-    stop("climateYear does not have any available years?")
+    theYear <- Time
   }
   
   return(theYear)
@@ -116,9 +120,9 @@ sampleYear <- function(Range, Starting, Ending, Time, Available) {
   message(currentModule(sim), ": using dataPath '", dPath, "'.")
 
   if (!suppliedElsewhere("projectedClimateRasters", sim)) {
-    range <- start(sim):end(sim)
-    sim$projectedClimateRasters <- list("fooVar" = terra::rast(nlyrs = range))
-    names(sim$projectedClimateRasters[[1]]) <- paste0("year", range)
+    Range <- start(sim):end(sim)
+    sim$projectedClimateRasters <- list("fooVar" = terra::rast(nlyrs = Range))
+    names(sim$projectedClimateRasters[[1]]) <- paste0("year",Range)
   }
   
   return(invisible(sim))
