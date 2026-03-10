@@ -13,6 +13,7 @@ defineModule(sim, list(
   version = list(climateYear = "0.0.0.9000"),
   timeframe = as.POSIXlt(c(NA, NA)),
   timeunit = "year",
+  loadOrder = list(before = c("fireSense_dataPrepPredict")),
   citation = list("citation.bib"),
   documentation = list("NEWS.md", "README.md", "climateYear.Rmd"),
   reqdPkgs = list("SpaDES.core (>= 2.1.8.9999)", "ggplot2"),
