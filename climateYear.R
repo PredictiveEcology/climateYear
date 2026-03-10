@@ -4,7 +4,9 @@ defineModule(sim, list(
                       "are sampled and supplied in simulations concerned with some form of NRV, ie where the simulation",
                       "length necessitates sampling climate layers instead of writing them to disk and annually retrieving them.", 
                       "It provides a measure of control over the sampling protocol used to select a given year, and ensures",
-                      "consistent use of years across multiple modules when sampling is involved"),
+                      "consistent use of years across multiple modules when sampling is involved. Based on time(sim) and",
+                      "user parameters, it determines whether to select from historical or projected climate rasters when",
+                      "building currentClimateRasters"),
   keywords = c(),
   authors = c(person(c("Ian", "Eddy", role = c("aut", "cre"), email = "ian.eddy@nrcan-rncan.gc.ca"))),
   childModules = character(0),
@@ -35,17 +37,24 @@ defineModule(sim, list(
   ),
   inputObjects = bindrows(
     #expectsInput("objectName", "objectClass", "input object description", sourceURL, ...),
+    expectsInput(objectName = "historicalClimateRasters", objectClass = "list", 
+                 desc = paste("optional list of SpatRasters, with layers corresponding to years.",
+                              "Each list element should be a different variable with corresponding names.",
+                              "Each layer should be named following the convention 'year<year>`, e.g. year2009.",
+                              "The object is used solely to determine the available years from which to sample")),
     expectsInput(objectName = "projectedClimateRasters", objectClass = "list", 
-                 desc = paste("a list of SpatRasters, with layers corresponding to years.",
+                 desc = paste("optional list of SpatRasters, with layers corresponding to years.",
                               "Each list element should be a different variable with corresponding names.",
                               "Each layer should be named following the convention 'year<year>`, e.g. year2009.",
                               "The object is used solely to determine the available years from which to sample"))
   ),
   outputObjects = bindrows(
     createsOutput(objectName = "climateYear", objectClass = "numeric", 
-                  desc = "a year from projectedClimateRasters, updated annually"), 
+                  desc = "a year from projectedClimateRasters, updated annually"),
     createsOutput(objectName = "climateYearRecord", objectClass = "data.table", 
-                  desc = "record of which climate year was used for which simulation year")
+                  desc = "record of which climate year was used for which simulation year"),
+    createsOutput(objectName = "currentClimateRasters", objectClass = "SpatRaster", 
+                  desc= "a single-year subset of projected or historical rasters")
   )
 ))
 
@@ -61,11 +70,30 @@ doEvent.climateYear = function(sim, eventTime, eventType) {
       sim <- scheduleEvent(sim, start(sim), "climateYear", "getClimate")
     },
     getClimate = {
+      availableYears <- c()
+      if (!is.null(sim$projectedClimateRasters)){
+        availableYears <- names(sim$projectedClimateRasters[[1]])
+      }
+      if (!is.null(sim$historicalClimateRasters)){
+        availableYears <- unique(c(availableYears, names(sim$historicalClimateRasters[[1]])))
+      }
+      
       sim$climateYear <- sampleYear(Time = time(sim), 
-                                    Available = names(sim$projectedClimateRasters[[1]]),
+                                    Available = availableYears,
                                     Starting = P(sim)$samplingStartYear,
                                     Ending = P(sim)$samplingEndYear,
                                     Range = P(sim)$samplingRange)
+      
+      #prioritize historical rasters
+      rasToGet <- paste0("year", sim$climateYear)
+      if (any(rasToGet %in% names(sim$historicalClimateRasters[[1]]))) {
+        sim$currentClimateRasters <- lapply(sim$historicalClimateRasters, "[[", rasToGet) |>
+          rast()
+      } else {
+        sim$currentClimateRasters <- lapply(sim$projectedClimateRasters, "[[", rasToGet) |> 
+          rast()
+      }
+      
       sim$climateYearRecord <- rbind(sim$climateYearRecord, 
                                      data.table(simYear = time(sim), 
                                                 climateYear = sim$climateYear))
@@ -96,18 +124,28 @@ Save <- function(sim) {
 }
 
 sampleYear <- function(Range, Starting, Ending, Time, Available) {
-  Available <- as.numeric(gsub("[^0-9]", "", Range))
-  Range <- Range[Range %in% Available]
-  if (!is.na(Starting)){
+  Available <- na.omit(as.numeric(gsub("[^0-9]", "", Available)))
+  #na.omit to account for projected normals
+  if (is.na(Range)) {
+    Range <- Available
+  } else {
+    Range <- Range[Range %in% Available]
+  }
+  if (!is.na(Starting)) {
     if (Starting <= Time & Time <= Ending) {
       theYear <- sample(Range, size = 1)
     } else if (Time %in% Available) {
+      #sample, but not yet
       theYear <- Time
     } else {
+      #sample, but not yet and the current year is not in the available years...
       stop("climateYear does not have any available years?")
     }
-  } else {
+  } else if (Time %in% Range) {
     theYear <- Time
+  } else {
+    #do not explicit sample but no available years, so grab anything
+    theYear <- sample(Range, size = 1)
   }
   
   return(theYear)
