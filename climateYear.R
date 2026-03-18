@@ -31,7 +31,8 @@ defineModule(sim, list(
                     desc = paste("if randomly sampling the year for a given climate,", 
                                  "the simulation year at which to end this process, if applicable")),
     defineParameter("samplingRange", "numeric", NA, NA, NA, 
-                    "Vector giving years from which to sample. The default is all years in projectedClimateRasters"),
+                    "Vector giving years from which to sample. The default is all years ",
+                    " in sort(unique(c(historicalClimateRaster, projectedClimateRasters)))"),
     defineParameter("samplingStartYear", "numeric", NA, NA, NA, 
                     desc = paste("if randomly sampling the year for a given climate,", 
                                  "the simulation year at which to begin this process"))
@@ -76,7 +77,7 @@ doEvent.climateYear = function(sim, eventTime, eventType) {
         availableYears <- names(sim$projectedClimateRasters[[1]])
       }
       if (!is.null(sim$historicalClimateRasters)){
-        availableYears <- unique(c(availableYears, names(sim$historicalClimateRasters[[1]])))
+        availableYears <- sort(unique(c(availableYears, names(sim$historicalClimateRasters[[1]]))))
       }
       
       sim$climateYear <- sampleYear(Time = time(sim), 
@@ -141,12 +142,17 @@ sampleYear <- function(Range, Starting, Ending, Time, Available) {
   if (!is.na(Starting)) {
     if (Starting <= Time & Time <= Ending) {
       theYear <- sample(Range, size = 1)
-    } else if (Time %in% Available) {
+    # This next was Time %in% Available, but Range is what needs to be respected not Available
+      # Eliot changed March 17, 2026
+    } else if (Time %in% Range) {
       #sample, but not yet
       theYear <- Time
-    } else {
-      #sample, but not yet and the current year is not in the available years...
-      stop("climateYear does not have any available years?")
+    } else { # if (all(Range %in% Available)) {
+      # The Range above is already reduced to whatever is Available; so no stop needed
+      theYear <- sample(Range, size = 1)
+    # } else {
+    #   #sample, but not yet and the current year is not in the available years...
+    #   stop("climateYear does not have any available years?")
     }
   } else if (Time %in% Range) {
     theYear <- Time
