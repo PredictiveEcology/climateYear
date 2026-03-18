@@ -79,7 +79,7 @@ doEvent.climateYear = function(sim, eventTime, eventType) {
       if (!is.null(sim$historicalClimateRasters)){
         availableYears <- sort(unique(c(availableYears, names(sim$historicalClimateRasters[[1]]))))
       }
-      
+     
       sim$climateYear <- sampleYear(Time = time(sim), 
                                     Available = availableYears,
                                     Starting = P(sim)$samplingStartYear,
@@ -132,6 +132,11 @@ Save <- function(sim) {
 }
 
 sampleYear <- function(Range, Starting, Ending, Time, Available) {
+  
+  if (is.na(Ending)) {
+    Ending <- Time + 1 # protect in future `if` statements
+  }
+  
   Available <- na.omit(as.numeric(gsub("[^0-9]", "", Available)))
   #na.omit to account for projected normals
   if (any(is.na(Range))) {
