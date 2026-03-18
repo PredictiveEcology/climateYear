@@ -134,7 +134,7 @@ Save <- function(sim) {
 sampleYear <- function(Range, Starting, Ending, Time, Available) {
   Available <- na.omit(as.numeric(gsub("[^0-9]", "", Available)))
   #na.omit to account for projected normals
-  if (is.na(Range)) {
+  if (any(is.na(Range))) {
     Range <- Available
   } else {
     Range <- Range[Range %in% Available]
