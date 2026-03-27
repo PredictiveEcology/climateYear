@@ -144,27 +144,36 @@ sampleYear <- function(Range, Starting, Ending, Time, Available) {
   } else {
     Range <- Range[Range %in% Available]
   }
-  if (!is.na(Starting)) {
-    if (Starting <= Time & Time <= Ending) {
-      theYear <- sample(Range, size = 1)
-    # This next was Time %in% Available, but Range is what needs to be respected not Available
-      # Eliot changed March 17, 2026
-    } else if (Time %in% Range) {
-      #sample, but not yet
-      theYear <- Time
-    } else { # if (all(Range %in% Available)) {
-      # The Range above is already reduced to whatever is Available; so no stop needed
-      theYear <- sample(Range, size = 1)
-    # } else {
-    #   #sample, but not yet and the current year is not in the available years...
-    #   stop("climateYear does not have any available years?")
-    }
-  } else if (Time %in% Range) {
+  
+  if (Time %in% Range) {
     theYear <- Time
   } else {
-    #do not explicit sample but no available years, so grab anything
     theYear <- sample(Range, size = 1)
   }
+  
+  
+  
+  # if (any(!is.na(Starting))) {
+  #   if (Starting <= Time & Time <= Ending) {
+  #     theYear <- sample(Range, size = 1)
+  #   # This next was Time %in% Available, but Range is what needs to be respected not Available
+  #     # Eliot changed March 17, 2026
+  #   } else if (Time %in% Range) {
+  #     #sample, but not yet
+  #     theYear <- Time
+  #   } else { # if (all(Range %in% Available)) {
+  #     # The Range above is already reduced to whatever is Available; so no stop needed
+  #     theYear <- sample(Range, size = 1)
+  #   # } else {
+  #   #   #sample, but not yet and the current year is not in the available years...
+  #   #   stop("climateYear does not have any available years?")
+  #   }
+  # } else if (Time %in% Range) {
+  #   theYear <- Time
+  # } else {
+  #   #do not explicit sample but no available years, so grab anything
+  #   theYear <- sample(Range, size = 1)
+  # }
   
   return(theYear)
 }
