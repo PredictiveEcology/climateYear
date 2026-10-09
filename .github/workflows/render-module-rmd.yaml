@@ -1,33 +1,27 @@
-## Thin caller. The job itself lives in PredictiveEcology/actions, so the pins
-## for install-spatial-deps, install-Require, install-SpaDES and install-Rmd-pkgs
-## live there too and move once, instead of being frozen into every module
-## repository on the day it was created.
-##
-## https://github.com/PredictiveEcology/actions/blob/main/.github/workflows/render-module-rmd.yaml
+## Example caller for the render-module-rmd reusable workflow.
+## Replace climateYear with the module name (which must match the repository name).
+## SpaDES.core::use_gha() generates this file; it is kept here so the shape is
+## visible without reading the generator.
 
 name: Render module Rmd
 
 on:
   pull_request:
-    branches:
-      - main
-      - master
-      - development
+    branches: [main, master, development]
   push:
-    branches:
-      - main
-      - master
-      - development
+    branches: [main, master, development]
     paths:
       - .github/workflows/render-module-rmd.yaml
-      - climateYear.Rmd
       - climateYear.R
+      - climateYear.Rmd
   workflow_dispatch:
 
 jobs:
   render-module-rmd:
-    ## `render` (contents: read) installs and runs this module's code; `commit`
-    ## (contents: write) runs only git. The write scope must be granted here.
+    ## The called workflow splits `render` (contents: read, runs the module's own
+    ## code) from `commit` (contents: write, runs nothing but git). A called
+    ## workflow can only reduce what is granted here, so the write scope has to
+    ## be granted at the call site.
     permissions:
       contents: write
     uses: PredictiveEcology/actions/.github/workflows/render-module-rmd.yaml@main
