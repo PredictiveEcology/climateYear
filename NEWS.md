@@ -1,4 +1,8 @@
-# climateYear (development version)
+# climateYear 0.1.0
+
+climateYear now produces each year's climate layers as their own object, instead of changing the historical or projected climate layers it was given. When sampling, it now draws from the historical and projected years together. A simulation year outside the sampling range no longer stops the run.
+
+Checks for missing values no longer fail when they look at more than one value. The module lists every package it needs, and it now has automatic tests.
 
 * `reqdPkgs` now lists `data.table` and `terra`, which the module's code uses.
 - each simulation year's climate now has its own small `.vrt` (about 1 KB) that points at the band of the source stack, instead of a full `.tif` copy (about 72 MB). The files are written to `file.path(outputPath(sim), "climate")` as `climate_simYear<sim year>_climYear<climate year>.vrt` (one per simulation year, even if a climate year is reused) instead of next to the source stacks. `currentClimateRasters` is read from it, with the same values, names, extent and crs. Sources that are not single files on disk are still copied to a `.tif`. The module now lists `sf` and `terra` in `reqdPkgs`.
