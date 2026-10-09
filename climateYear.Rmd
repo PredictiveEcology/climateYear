@@ -53,12 +53,12 @@ This is a template for module documentation, and should be changed to reflect yo
 ### Module inputs and parameters
 
 Describe input data required by the module and how to obtain it (e.g., directly from online sources or supplied by other modules)
-If `sourceURL` is specified, `downloadData("climateYear", "/home/ieddy/git/climateGrowth/modules")` may be sufficient.
+If `sourceURL` is specified, `downloadData("climateYear", "..")` may be sufficient.
 
 Table \@ref(tab:moduleInputs-climateYear) shows the full list of module inputs.
 
 ```{r moduleInputs-climateYear, echo = FALSE, eval = TRUE, message = FALSE, warning = FALSE}
-df_inputs <- SpaDES.core::moduleInputs("climateYear", "/home/ieddy/git/climateGrowth/modules")
+df_inputs <- SpaDES.core::moduleInputs("climateYear", "..")
 knitr::kable(df_inputs,
              caption = "List of (ref:climateYear) input objects and their description.") |>
   kableExtra::kable_styling(latex_options = "scale_down", full_width = TRUE)
@@ -68,7 +68,7 @@ Summary of user-visible parameters (Table \@ref(tab:moduleParams-climateYear))
 
 
 ```{r moduleParams-climateYear, echo = FALSE, eval = TRUE, message = FALSE, warning = FALSE}
-df_params <- SpaDES.core::moduleParams("climateYear", "/home/ieddy/git/climateGrowth/modules")
+df_params <- SpaDES.core::moduleParams("climateYear", "..")
 knitr::kable(df_params, caption = "List of (ref:climateYear) parameters and their description.") |>
   kableExtra::kable_styling(latex_options = "scale_down", full_width = TRUE)
 ```
@@ -90,7 +90,7 @@ Write what is saved.
 Description of the module outputs (Table \@ref(tab:moduleOutputs-climateYear)).
 
 ```{r moduleOutputs-climateYear, echo = FALSE, eval = TRUE, message = FALSE, warning = FALSE}
-df_outputs <- SpaDES.core::moduleOutputs("climateYear", "/home/ieddy/git/climateGrowth/modules")
+df_outputs <- SpaDES.core::moduleOutputs("climateYear", "..")
 knitr::kable(df_outputs, caption = "List of (ref:climateYear) outputs and their description.") |>
   kableExtra::kable_styling(latex_options = "scale_down", full_width = TRUE)
 ```
