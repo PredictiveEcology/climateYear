@@ -72,13 +72,7 @@ doEvent.climateYear = function(sim, eventTime, eventType) {
       sim <- scheduleEvent(sim, start(sim), "climateYear", "getClimate")
     },
     getClimate = {
-      availableYears <- c()
-      if (!is.null(sim$projectedClimateRasters)){
-        availableYears <- names(sim$projectedClimateRasters[[1]])
-      }
-      if (!is.null(sim$historicalClimateRasters)){
-        availableYears <- sort(unique(c(availableYears, names(sim$historicalClimateRasters[[1]]))))
-      }
+      availableYears <- availableClimateYears(sim$projectedClimateRasters, sim$historicalClimateRasters)
      
       sim$climateYear <- sampleYear(Time = time(sim), 
                                     Available = availableYears,
@@ -191,4 +185,14 @@ sampleYear <- function(Range, Starting, Ending, Time, Available) {
   }
   
   return(invisible(sim))
+}
+
+## The layer names ("year2011", ...) of the first variable of each list of climate rasters, both
+## lists together. A list may be NULL or empty: an NRV run asks canClimateData for no projected
+## years, and gets an empty `projectedClimateRasters` (FireSense, 2026-10-09).
+availableClimateYears <- function(projected, historical) {
+  yrs <- c()
+  if (length(projected)) yrs <- names(projected[[1]])
+  if (length(historical)) yrs <- sort(unique(c(yrs, names(historical[[1]]))))
+  yrs
 }
