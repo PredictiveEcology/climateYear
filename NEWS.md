@@ -1,6 +1,8 @@
-# climateYear 0.1.0
+# climateYear (development version)
 
 * `getClimate` no longer stops when `projectedClimateRasters` is an empty list, as in an NRV run that asks for no projected years (`availableClimateYears()`).
+
+# climateYear 0.1.0
 
 climateYear now produces each year's climate layers as their own object, instead of changing the historical or projected climate layers it was given. When sampling, it now draws from the historical and projected years together. A simulation year outside the sampling range no longer stops the run.
 
