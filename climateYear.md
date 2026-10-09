@@ -1,6 +1,6 @@
 ---
 title: "climateYear Manual"
-subtitle: "v.0.1.0"
+subtitle: "v.0.1.0.9000"
 date: "Last updated: 2026-10-09"
 output:
   bookdown::html_document2:
