@@ -10,7 +10,7 @@ defineModule(sim, list(
   keywords = c(),
   authors = c(person(c("Ian", "Eddy", role = c("aut", "cre"), email = "ian.eddy@nrcan-rncan.gc.ca"))),
   childModules = character(0),
-  version = list(climateYear = "0.1.0"),
+  version = list(climateYear = "0.1.0.9000"),
   timeframe = as.POSIXlt(c(NA, NA)),
   timeunit = "year",
   loadOrder = list(before = c("fireSense_dataPrepPredict")),

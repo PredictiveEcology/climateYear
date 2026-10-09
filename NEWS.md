@@ -1,3 +1,5 @@
+# climateYear (development version)
+
 # climateYear 0.1.0
 
 climateYear now produces each year's climate layers as their own object, instead of changing the historical or projected climate layers it was given. When sampling, it now draws from the historical and projected years together. A simulation year outside the sampling range no longer stops the run.
