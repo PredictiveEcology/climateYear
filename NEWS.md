@@ -1,5 +1,6 @@
 # climateYear (development version)
 
+- `init` now stops, when climate rasters are supplied and `samplingRange` is not set, if the run's start is not a calendar year from 1901 to 2100 (for example the model years 0-10 that `setupProject()` gives without `times`). Before, a random climate year was drawn each year without notice. The message says to set `times`, e.g. `times = list(start = 2020, end = 2120)`, or `samplingRange` to sample on purpose.
 - `reproducible` is now in `reqdPkgs` (`Filenames()`, `asPath()` are used unqualified).
 
 # climateYear 0.1.0
