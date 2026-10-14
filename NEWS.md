@@ -1,6 +1,7 @@
 # climateYear (development version)
 
 * `getClimate` no longer stops when `projectedClimateRasters` is an empty list, as in an NRV run that asks for no projected years (`availableClimateYears()`).
+- `reproducible` is now in `reqdPkgs` (`Filenames()`, `asPath()` are used unqualified).
 
 # climateYear 0.1.0
 
