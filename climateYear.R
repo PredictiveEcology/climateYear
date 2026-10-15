@@ -16,7 +16,8 @@ defineModule(sim, list(
   loadOrder = list(before = c("fireSense_dataPrepPredict")),
   citation = list("citation.bib"),
   documentation = list("NEWS.md", "README.md", "climateYear.Rmd"),
-  reqdPkgs = list("SpaDES.core (>= 2.1.8.9999)", "data.table", "ggplot2", "terra", "reproducible"),
+  reqdPkgs = list("SpaDES.core (>= 2.1.8.9999)", "data.table", "ggplot2", "terra", "reproducible",
+                  "PredictiveEcology/climateData@development (>= 2.2.3.9009)"),
   parameters = bindrows(
     #defineParameter("paramName", "paramClass", value, min, max, "parameter description"),
     defineParameter(".studyAreaName", "character", NA, NA, NA,
@@ -115,6 +116,10 @@ doEvent.climateYear = function(sim, eventTime, eventType) {
 
 ### template initialization
 Init <- function(sim) {
+ ## model-year times match no climate year; a samplingRange is the deliberate way to sample with them
+ if (mod$climateSupplied && all(is.na(P(sim)$samplingRange)))
+   checkCalendarYears(start(sim), end(sim), module = "climateYear",
+                      hint = "To draw random climate years on purpose, set `samplingRange`.")
 
  #make climateYearRecord
  sim$climateYearRecord <- data.table(simYear = numeric(0), climateYear = numeric(0)) 
@@ -184,9 +189,12 @@ sampleYear <- function(Range, Starting, Ending, Time, Available) {
   dPath <- asPath(getOption("reproducible.destinationPath", dataPath(sim)), 1)
   message(currentModule(sim), ": using dataPath '", dPath, "'.")
 
+  ## Init checks the run's times only against climate rasters the user supplied, not the placeholder below
+  mod$climateSupplied <- suppliedElsewhere("projectedClimateRasters", sim) ||
+    suppliedElsewhere("historicalClimateRasters", sim)
   if (!suppliedElsewhere("projectedClimateRasters", sim)) {
     Range <- start(sim):end(sim)
-    sim$projectedClimateRasters <- list("fooVar" = terra::rast(nlyrs = Range))
+    sim$projectedClimateRasters <- list("fooVar" = terra::rast(nlyrs = length(Range)))
     names(sim$projectedClimateRasters[[1]]) <- paste0("year",Range)
   }
   
