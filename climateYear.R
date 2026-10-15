@@ -16,7 +16,8 @@ defineModule(sim, list(
   loadOrder = list(before = c("fireSense_dataPrepPredict")),
   citation = list("citation.bib"),
   documentation = list("NEWS.md", "README.md", "climateYear.Rmd"),
-  reqdPkgs = list("SpaDES.core (>= 2.1.8.9999)", "data.table", "ggplot2", "terra", "reproducible"),
+  reqdPkgs = list("SpaDES.core (>= 2.1.8.9999)", "data.table", "ggplot2", "terra", "reproducible",
+                  "PredictiveEcology/climateData@development (>= 2.2.3.9009)"),
   parameters = bindrows(
     #defineParameter("paramName", "paramClass", value, min, max, "parameter description"),
     defineParameter(".studyAreaName", "character", NA, NA, NA,
@@ -113,31 +114,12 @@ doEvent.climateYear = function(sim, eventTime, eventType) {
   return(invisible(sim))
 }
 
-#' Check that the run's times can be matched to climate years
-#'
-#' The climate rasters are by calendar year (historical from 1901, projections to 2100). With
-#' no `samplingRange` and a start outside 1901-2100 (e.g. model years 0-10, which
-#' `setupProject()` gives when `times` is not set), no climate year matches the simulation
-#' year and a random year would be drawn without notice. A `samplingRange` asks for that, so
-#' it is accepted. The run may end after 2100.
-#'
-#' @param start,end Start and end times of the simulation.
-#' @param samplingRange The `samplingRange` parameter.
-#'
-#' @return `NULL` invisibly; an error otherwise.
-checkCalendarYears <- function(start, end, samplingRange) {
-  if (all(is.na(samplingRange)) && (start < 1901 || start > 2100)) {
-    stop("climateYear: times are model years ", start, "-", end, "; this module needs calendar years ",
-         "(the climate data cover 1901-2100, so `start` must be in that range), ",
-         "e.g. times = list(start = 2020, end = 2120). ",
-         "To draw random climate years on purpose, set `samplingRange`.", call. = FALSE)
-  }
-  invisible(NULL)
-}
-
 ### template initialization
 Init <- function(sim) {
- if (mod$climateSupplied) checkCalendarYears(start(sim), end(sim), P(sim)$samplingRange)
+ ## model-year times match no climate year; a samplingRange is the deliberate way to sample with them
+ if (mod$climateSupplied && all(is.na(P(sim)$samplingRange)))
+   checkCalendarYears(start(sim), end(sim), module = "climateYear",
+                      hint = "To draw random climate years on purpose, set `samplingRange`.")
 
  #make climateYearRecord
  sim$climateYearRecord <- data.table(simYear = numeric(0), climateYear = numeric(0)) 
@@ -212,7 +194,7 @@ sampleYear <- function(Range, Starting, Ending, Time, Available) {
     suppliedElsewhere("historicalClimateRasters", sim)
   if (!suppliedElsewhere("projectedClimateRasters", sim)) {
     Range <- start(sim):end(sim)
-    sim$projectedClimateRasters <- list("fooVar" = terra::rast(nlyrs = Range))
+    sim$projectedClimateRasters <- list("fooVar" = terra::rast(nlyrs = length(Range)))
     names(sim$projectedClimateRasters[[1]]) <- paste0("year",Range)
   }
   

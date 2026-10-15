@@ -1,5 +1,6 @@
 # climateYear (development version)
 
+- The placeholder `projectedClimateRasters` made when none are supplied failed for any run longer than one year (`terra::rast(nlyrs = <vector>)`); it now has one layer per simulation year. The calendar-year check calls `climateData::checkCalendarYears()`, so `climateData` is in `reqdPkgs` (needs >= 2.2.3.9009).
 - `init` now stops, when climate rasters are supplied and `samplingRange` is not set, if the run's start is not a calendar year from 1901 to 2100 (for example the model years 0-10 that `setupProject()` gives without `times`). Before, a random climate year was drawn each year without notice. The message says to set `times`, e.g. `times = list(start = 2020, end = 2120)`, or `samplingRange` to sample on purpose.
 - `reproducible` is now in `reqdPkgs` (`Filenames()`, `asPath()` are used unqualified).
 
