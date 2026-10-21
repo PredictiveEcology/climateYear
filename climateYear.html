@@ -2972,8 +2972,8 @@ border-radius: 0px;
 
 
 <h1 class="title toc-ignore">climateYear Manual</h1>
-<h3 class="subtitle">v.0.1.0.9000</h3>
-<h4 class="date">Last updated: 2026-10-14</h4>
+<h3 class="subtitle">v.0.1.0.9001</h3>
+<h4 class="date">Last updated: 2026-10-21</h4>
 
 </div>
 
@@ -3064,6 +3064,9 @@ max
 <th style="text-align:left;">
 paramDesc
 </th>
+<th style="text-align:left;">
+cacheKey
+</th>
 </tr>
 </thead>
 <tbody>
@@ -3086,6 +3089,9 @@ NA
 <td style="text-align:left;">
 Human-readable name for the study area used - e.g., a hash of the studyarea obtained using <code>reproducible::studyAreaName()</code>
 </td>
+<td style="text-align:left;">
+TRUE
+</td>
 </tr>
 <tr>
 <td style="text-align:left;">
@@ -3104,6 +3110,9 @@ NA
 </td>
 <td style="text-align:left;">
 Named list of seeds to use for each event (names).
+</td>
+<td style="text-align:left;">
+TRUE
 </td>
 </tr>
 <tr>
@@ -3125,6 +3134,9 @@ NA
 <td style="text-align:left;">
 Should caching of events or module be used?
 </td>
+<td style="text-align:left;">
+TRUE
+</td>
 </tr>
 <tr>
 <td style="text-align:left;">
@@ -3144,6 +3156,9 @@ NA
 </td>
 <td style="text-align:left;">
 if randomly sampling the year for a given climate, the simulation year at which to end this process, if applicable
+</td>
+<td style="text-align:left;">
+TRUE
 </td>
 </tr>
 <tr>
@@ -3165,6 +3180,9 @@ NA
 <td style="text-align:left;">
 Vector giving years from which to sample. The default is all years in sort(unique(c(historicalClimateRaster, projectedClimateRasters)))
 </td>
+<td style="text-align:left;">
+TRUE
+</td>
 </tr>
 <tr>
 <td style="text-align:left;">
@@ -3184,6 +3202,9 @@ NA
 </td>
 <td style="text-align:left;">
 if randomly sampling the year for a given climate, the simulation year at which to begin this process
+</td>
+<td style="text-align:left;">
+TRUE
 </td>
 </tr>
 </tbody>
@@ -3242,6 +3263,17 @@ data.table
 </td>
 <td style="text-align:left;">
 record of which climate year was used for which simulation year
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+climateYearsUsed
+</td>
+<td style="text-align:left;">
+data.table
+</td>
+<td style="text-align:left;">
+one row per simulation year and climate variable: the climate year used, whether it came from historical or projected rasters, the source file (<code>sourceFile</code>), its md5 checksum (<code>sourceMd5</code>, taken the first time the file is used in a run) and layer name it was read from, and the per-year file (<code>yearFile</code>, a .vrt in <code>file.path(outputPath(sim), &quot;climate&quot;)</code> that points at the source band). Also written to <code>climateYearsUsed.csv</code> in <code>outputPath(sim)</code> every year
 </td>
 </tr>
 <tr>

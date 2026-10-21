@@ -1,7 +1,7 @@
 ---
 title: "climateYear Manual"
-subtitle: "v.0.1.0.9000"
-date: "Last updated: 2026-10-14"
+subtitle: "v.0.1.0.9001"
+date: "Last updated: 2026-10-21"
 output:
   bookdown::html_document2:
     toc: true
@@ -86,6 +86,7 @@ Summary of user-visible parameters (Table \@ref(tab:moduleParams-climateYear))
    <th style="text-align:left;"> min </th>
    <th style="text-align:left;"> max </th>
    <th style="text-align:left;"> paramDesc </th>
+   <th style="text-align:left;"> cacheKey </th>
   </tr>
  </thead>
 <tbody>
@@ -96,6 +97,7 @@ Summary of user-visible parameters (Table \@ref(tab:moduleParams-climateYear))
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> Human-readable name for the study area used - e.g., a hash of the studyarea obtained using `reproducible::studyAreaName()` </td>
+   <td style="text-align:left;"> TRUE </td>
   </tr>
   <tr>
    <td style="text-align:left;"> .seed </td>
@@ -104,6 +106,7 @@ Summary of user-visible parameters (Table \@ref(tab:moduleParams-climateYear))
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> Named list of seeds to use for each event (names). </td>
+   <td style="text-align:left;"> TRUE </td>
   </tr>
   <tr>
    <td style="text-align:left;"> .useCache </td>
@@ -112,6 +115,7 @@ Summary of user-visible parameters (Table \@ref(tab:moduleParams-climateYear))
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> Should caching of events or module be used? </td>
+   <td style="text-align:left;"> TRUE </td>
   </tr>
   <tr>
    <td style="text-align:left;"> samplingEndYear </td>
@@ -120,6 +124,7 @@ Summary of user-visible parameters (Table \@ref(tab:moduleParams-climateYear))
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> if randomly sampling the year for a given climate, the simulation year at which to end this process, if applicable </td>
+   <td style="text-align:left;"> TRUE </td>
   </tr>
   <tr>
    <td style="text-align:left;"> samplingRange </td>
@@ -128,6 +133,7 @@ Summary of user-visible parameters (Table \@ref(tab:moduleParams-climateYear))
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> Vector giving years from which to sample. The default is all years in sort(unique(c(historicalClimateRaster, projectedClimateRasters))) </td>
+   <td style="text-align:left;"> TRUE </td>
   </tr>
   <tr>
    <td style="text-align:left;"> samplingStartYear </td>
@@ -136,6 +142,7 @@ Summary of user-visible parameters (Table \@ref(tab:moduleParams-climateYear))
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> if randomly sampling the year for a given climate, the simulation year at which to begin this process </td>
+   <td style="text-align:left;"> TRUE </td>
   </tr>
 </tbody>
 </table>
@@ -175,6 +182,11 @@ Description of the module outputs (Table \@ref(tab:moduleOutputs-climateYear)).
    <td style="text-align:left;"> climateYearRecord </td>
    <td style="text-align:left;"> data.table </td>
    <td style="text-align:left;"> record of which climate year was used for which simulation year </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> climateYearsUsed </td>
+   <td style="text-align:left;"> data.table </td>
+   <td style="text-align:left;"> one row per simulation year and climate variable: the climate year used, whether it came from historical or projected rasters, the source file (`sourceFile`), its md5 checksum (`sourceMd5`, taken the first time the file is used in a run) and layer name it was read from, and the per-year file (`yearFile`, a .vrt in `file.path(outputPath(sim), "climate")` that points at the source band). Also written to `climateYearsUsed.csv` in `outputPath(sim)` every year </td>
   </tr>
   <tr>
    <td style="text-align:left;"> currentClimateRasters </td>
