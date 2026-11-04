@@ -1,7 +1,7 @@
 ---
 title: "climateYear Manual"
 subtitle: "v.0.1.0.9001"
-date: "Last updated: 2026-10-21"
+date: "Last updated: 2026-11-04"
 output:
   bookdown::html_document2:
     toc: true
@@ -142,6 +142,15 @@ Summary of user-visible parameters (Table \@ref(tab:moduleParams-climateYear))
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> if randomly sampling the year for a given climate, the simulation year at which to begin this process </td>
+   <td style="text-align:left;"> TRUE </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> yearSeed </td>
+   <td style="text-align:left;"> integer </td>
+   <td style="text-align:left;"> NA </td>
+   <td style="text-align:left;"> NA </td>
+   <td style="text-align:left;"> NA </td>
+   <td style="text-align:left;"> When set, every simulation year's climate year is drawn once, at the first `getClimate` event, from this seed, independently of any other use of random numbers in the run: runs with the same `yearSeed` and `samplingRange` get the same sequence (e.g. all study areas of one replicate). Requires `samplingRange`, and every year in it must be available. NA: draw each year from the session's random numbers, as before </td>
    <td style="text-align:left;"> TRUE </td>
   </tr>
 </tbody>
