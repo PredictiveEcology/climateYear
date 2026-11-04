@@ -17,7 +17,7 @@ defineModule(sim, list(
   citation = list("citation.bib"),
   documentation = list("NEWS.md", "README.md", "climateYear.Rmd"),
   reqdPkgs = list("SpaDES.core (>= 2.1.8.9999)", "data.table", "ggplot2", "terra", "sf", "reproducible",
-                  "PredictiveEcology/climateData@development (>= 2.2.3.9009)"),
+                  "PredictiveEcology/climateData@modsForFireSense (>= 2.2.3.9010)"),
   parameters = bindrows(
     #defineParameter("paramName", "paramClass", value, min, max, "parameter description"),
     defineParameter(".studyAreaName", "character", NA, NA, NA,
