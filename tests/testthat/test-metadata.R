@@ -29,6 +29,7 @@ test_that("outputs are the expected names and classes", {
     outputs[order(names(outputs))],
     c(climateYear           = "numeric",
       climateYearRecord     = "data.table",
+      climateYearsUsed      = "data.table",
       currentClimateRasters = "SpatRaster")
   )
 })
@@ -38,6 +39,6 @@ test_that("parameters are the expected names", {
   expect_identical(
     sort(md$parameters$paramName),
     sort(c(".seed", ".studyAreaName", ".useCache", "samplingEndYear",
-           "samplingRange", "samplingStartYear"))
+           "samplingRange", "samplingStartYear", "yearSeed"))
   )
 })

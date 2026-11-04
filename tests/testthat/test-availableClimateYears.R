@@ -1,3 +1,5 @@
+availableClimateYears <- modFun("availableClimateYears")
+
 test_that("an empty projected list contributes no years (NRV runs ask for none)", {
   ## FireSense 2026-10-09: every NRV job stopped at `sim$projectedClimateRasters[[1]]`
   hist <- list(CMD = terra::rast(nlyrs = 2, names = c("year1990", "year1991")))
