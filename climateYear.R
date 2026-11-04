@@ -17,7 +17,7 @@ defineModule(sim, list(
   citation = list("citation.bib"),
   documentation = list("NEWS.md", "README.md", "climateYear.Rmd"),
   reqdPkgs = list("SpaDES.core (>= 2.1.8.9999)", "data.table", "ggplot2", "terra", "sf", "reproducible",
-                  "PredictiveEcology/climateData@development (>= 2.2.3.9009)"),
+                  "PredictiveEcology/climateData@modsForFireSense (>= 2.2.3.9010)"),
   parameters = bindrows(
     #defineParameter("paramName", "paramClass", value, min, max, "parameter description"),
     defineParameter(".studyAreaName", "character", NA, NA, NA,
@@ -36,7 +36,13 @@ defineModule(sim, list(
                     " in sort(unique(c(historicalClimateRaster, projectedClimateRasters)))"),
     defineParameter("samplingStartYear", "numeric", NA, NA, NA, 
                     desc = paste("if randomly sampling the year for a given climate,", 
-                                 "the simulation year at which to begin this process"))
+                                 "the simulation year at which to begin this process")),
+    defineParameter("yearSeed", "integer", NA_integer_, NA, NA,
+                    paste("When set, every simulation year's climate year is drawn once, at the first `getClimate`",
+                          "event, from this seed, independently of any other use of random numbers in the run: runs",
+                          "with the same `yearSeed` and `samplingRange` get the same sequence (e.g. all study areas",
+                          "of one replicate). Requires `samplingRange`, and every year in it must be available.",
+                          "NA: draw each year from the session's random numbers, as before"))
   ),
   inputObjects = bindrows(
     #expectsInput("objectName", "objectClass", "input object description", sourceURL, ...),
@@ -82,11 +88,20 @@ doEvent.climateYear = function(sim, eventTime, eventType) {
     getClimate = {
       availableYears <- availableClimateYears(sim$projectedClimateRasters, sim$historicalClimateRasters)
      
-      sim$climateYear <- sampleYear(Time = time(sim), 
-                                    Available = availableYears,
-                                    Starting = P(sim)$samplingStartYear,
-                                    Ending = P(sim)$samplingEndYear,
-                                    Range = P(sim)$samplingRange)
+      ## the climate rasters may come from another module, so they are first known here, not in Init
+      if (!is.na(P(sim)$yearSeed) && is.null(mod$yearSequence)) {
+        checkYearSeedRange(P(sim)$samplingRange, availableYears)
+        mod$yearSequence <- yearSequence(start(sim):end(sim), P(sim)$samplingRange, P(sim)$yearSeed)
+      }
+      sim$climateYear <- if (is.null(mod$yearSequence)) {
+        sampleYear(Time = time(sim), 
+                   Available = availableYears,
+                   Starting = P(sim)$samplingStartYear,
+                   Ending = P(sim)$samplingEndYear,
+                   Range = P(sim)$samplingRange)
+      } else {
+        unname(mod$yearSequence[as.character(time(sim))])
+      }
       
       #prioritize historical rasters
       rasToGet <- paste0("year", sim$climateYear)
@@ -162,6 +177,7 @@ Init <- function(sim) {
  if (mod$climateSupplied && all(is.na(P(sim)$samplingRange)))
    checkCalendarYears(start(sim), end(sim), module = "climateYear",
                       hint = "To draw random climate years on purpose, set `samplingRange`.")
+ mod$yearSequence <- NULL ## drawn at the first getClimate event when `yearSeed` is set
 
  #make climateYearRecord
  sim$climateYearRecord <- data.table(simYear = numeric(0), climateYear = numeric(0)) 
@@ -216,6 +232,41 @@ buildYearVrt <- function(srcRasters, layerName, lyrNames, vrtFile) {
   }, character(1))
   writeLines(paste0(parts[[1]]$header, paste(bandsXml, collapse = "\n"), "\n</VRTDataset>"), vrtFile)
   TRUE
+}
+
+## Stops unless every year of `Range` (samplingRange) is among the available layer names.
+checkYearSeedRange <- function(Range, Available) {
+  if (all(is.na(Range)))
+    stop("climateYear: `yearSeed` needs `samplingRange` to be set")
+  Available <- as.numeric(gsub("[^0-9]", "", Available))
+  missingYrs <- setdiff(Range, Available)
+  if (length(missingYrs))
+    stop("climateYear: `samplingRange` years not in this run's climate data: ",
+         paste(sort(missingYrs), collapse = ", "))
+  invisible(TRUE)
+}
+
+## The climate year of each simulation year in `simYears`, named by simulation year: a year in `Range`
+## is its own climate year (as in `sampleYear()`), the others are drawn from `Range` with `seed`.
+## The draw uses a fixed RNG kind and puts the caller's RNG kind and `.Random.seed` back afterwards,
+## so it neither depends on nor changes the run's random numbers.
+yearSequence <- function(simYears, Range, seed) {
+  oldKind <- RNGkind()
+  hadSeed <- exists(".Random.seed", envir = globalenv(), inherits = FALSE)
+  if (hadSeed) oldSeed <- get(".Random.seed", envir = globalenv())
+  on.exit({
+    do.call(RNGkind, as.list(oldKind))
+    if (hadSeed) assign(".Random.seed", oldSeed, envir = globalenv())
+    else if (exists(".Random.seed", envir = globalenv(), inherits = FALSE))
+      rm(".Random.seed", envir = globalenv())
+  }, add = TRUE)
+  RNGkind("Mersenne-Twister", "Inversion", "Rejection")
+  set.seed(seed)
+  
+  years <- simYears
+  drawn <- !simYears %in% Range
+  years[drawn] <- Range[sample.int(length(Range), sum(drawn), replace = TRUE)]
+  setNames(years, simYears)
 }
 
 sampleYear <- function(Range, Starting, Ending, Time, Available) {

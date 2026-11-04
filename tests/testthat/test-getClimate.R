@@ -1,13 +1,3 @@
-## a module function, without running defineModule()
-modFun <- function(name) {
-  exprs <- parse(file.path(testthat::test_path(), "..", "..", "climateYear.R"))
-  isFn <- vapply(exprs, function(e) is.call(e) && identical(e[[1]], as.name("<-")) &&
-                   identical(e[[2]], as.name(name)), logical(1))
-  env <- new.env()
-  eval(exprs[isFn][[1]], env)
-  get(name, env)
-}
-
 setupSim <- function(params, proj, mp) {
   set.seed(1)
   simInit(
@@ -56,10 +46,10 @@ test_that("getClimate writes a small .vrt per year, keeps every year, and record
     expect_identical(unique(used$source), "projected")
     expect_setequal(used$variable, names(proj))
     rec <- sim$climateYearRecord
-    expect_equal(unique(used[, c("simYear", "climateYear")])[order(simYear)]$climateYear,
-                 rec[order(simYear)]$climateYear)
+    perYear <- unique(as.data.frame(used)[, c("simYear", "climateYear")])
+    expect_equal(perYear$climateYear[order(perYear$simYear)], rec$climateYear[order(rec$simYear)])
     expect_identical(used$layer, paste0("year", used$climateYear))
-    expect_true(all(basename(used[variable == "CMD"]$sourceFile) == "var0_projected_x.tif"))
+    expect_true(all(basename(used$sourceFile[used$variable == "CMD"]) == "var0_projected_x.tif"))
     if (length(params$samplingRange) == 1L) {
       expect_true(all(used$climateYear == params$samplingRange)) ## a single-year range
     }
@@ -107,7 +97,7 @@ test_that("getClimate writes a small .vrt per year, keeps every year, and record
     digs <- vapply(unique(used$climateYear), function(cy) {
       lyrs <- terra::rast(lapply(proj, "[[", paste0("year", cy)))
       copy <- terra::writeRaster(lyrs, withr::local_tempfile(fileext = ".tif"))
-      f <- used[climateYear == cy]$yearFile[1]
+      f <- used$yearFile[used$climateYear == cy][1]
       v <- terra::rast(f)
       expect_equal(terra::values(v), terra::values(copy), tolerance = 0)
       expect_identical(names(v), names(copy)) ## names are stored in the .vrt
