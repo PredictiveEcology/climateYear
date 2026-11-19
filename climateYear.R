@@ -131,8 +131,8 @@ Save <- function(sim) {
 ## historical or projected stacks. The file is shared: its name is the year and a 7-character
 ## digest of where the layers came from (the source files, their sizes and times, and the layer
 ## names), e.g. year2001_3f9c2a1.tif, so every process that draws that year from the same stacks
-## uses one file, in later runs too. It is written under a temporary name and renamed into place,
-## so no process reads a part-written file; two processes writing it at once write the same bytes.
+## uses one file, in later runs too. Cache()'s file lock makes parallel processes wanting the same
+## year wait for the first to write it, then use its file.
 writeClimateYear <- function(r, year) {
   srcs <- unique(terra::sources(r))
   srcs <- srcs[nzchar(srcs)]
@@ -141,14 +141,8 @@ writeClimateYear <- function(r, year) {
   key <- substr(reproducible::.robustDigest(paste(
     c(basename(srcs), info$size, as.integer(info$mtime), names(r)), collapse = "|")), 1, 7)
   fn <- file.path(dirname(srcs[1]), paste0(year, "_", key, ".tif"))
-  if (!file.exists(fn)) {
-    tmp <- tempfile(paste0(year, "_"), tmpdir = dirname(fn), fileext = ".tif")
-    terra::writeRaster(r, tmp)
-    ## Windows cannot rename onto a file that exists; then another process just wrote it
-    if (!file.rename(tmp, fn) && !file.exists(fn)) stop("climateYear could not write ", fn)
-    unlink(tmp)
-  }
-  terra::rast(fn)
+  reproducible::writeTo(r, writeTo = fn, overwrite = TRUE) |>
+    reproducible::Cache(quick = TRUE, .cacheExtra = key, .functionName = "writeClimateYear")
 }
 
 sampleYear <- function(Range, Starting, Ending, Time, Available) {
