@@ -96,11 +96,7 @@ doEvent.climateYear = function(sim, eventTime, eventType) {
           rast()
       }
       
-      fns <- Filenames(sim$currentClimateRasters)
-      fn <- file.path(unique(dirname(fns)), 
-                      paste0(paste(rasToGet, sim$.runName, Sys.getpid(), sep = "_"), ".tif"))
-      sim$currentClimateRasters <- writeRaster(sim$currentClimateRasters, 
-                                               filename = fn, overwrite = TRUE)
+      sim$currentClimateRasters <- writeClimateYear(sim$currentClimateRasters, rasToGet)
       
       sim$climateYearRecord <- rbind(sim$climateYearRecord, 
                                      data.table(simYear = time(sim), 
@@ -129,6 +125,24 @@ Save <- function(sim) {
 
   # ! ----- STOP EDITING ----- ! #
   return(invisible(sim))
+}
+
+## Write one climate year's layers to a file of their own, so they no longer point at the whole
+## historical or projected stacks. The file is shared: its name is the year and a 7-character
+## digest of where the layers came from (the source files, their sizes and times, and the layer
+## names), e.g. year2001_3f9c2a1.tif, so every process that draws that year from the same stacks
+## uses one file, in later runs too. Cache()'s file lock makes parallel processes wanting the same
+## year wait for the first to write it, then use its file.
+writeClimateYear <- function(r, year) {
+  srcs <- unique(terra::sources(r))
+  srcs <- srcs[nzchar(srcs)]
+  if (!length(srcs)) return(r)                   # in memory: it points at no stack
+  info <- file.info(srcs)
+  key <- substr(reproducible::.robustDigest(paste(
+    c(basename(srcs), info$size, as.integer(info$mtime), names(r)), collapse = "|")), 1, 7)
+  fn <- file.path(dirname(srcs[1]), paste0(year, "_", key, ".tif"))
+  reproducible::writeTo(r, writeTo = fn, overwrite = TRUE) |>
+    reproducible::Cache(quick = TRUE, .cacheExtra = key, .functionName = "writeClimateYear")
 }
 
 sampleYear <- function(Range, Starting, Ending, Time, Available) {
