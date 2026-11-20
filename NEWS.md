@@ -1,5 +1,6 @@
 # climateYear (development version)
 
+- With no climate layers supplied, the module runs on its default projected layers (one empty layer per simulation year). Building them errored with "the condition has length > 1".
 - Each climate year is written once, to `year<year>_<digest>.tif` beside the climate layers (e.g. `year2001_3f9c2a1.tif`; the digest is 7 characters, from the source files and layer names), and every process that draws that year from the same climate layers uses that file, in later runs too. It was `year<year>_<.runName>_<process ID>.tif`, so every R process wrote its own copy of every year it drew and none was removed (169 files, 1.8 GB, in one project). Parallel runs that draw the same year wait on `Cache()`'s file lock while the first writes it, then use that file.
 - `reproducible` is now in `reqdPkgs` (`Filenames()`, `asPath()` are used unqualified).
 

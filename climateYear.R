@@ -200,7 +200,7 @@ sampleYear <- function(Range, Starting, Ending, Time, Available) {
 
   if (!suppliedElsewhere("projectedClimateRasters", sim)) {
     Range <- start(sim):end(sim)
-    sim$projectedClimateRasters <- list("fooVar" = terra::rast(nlyrs = Range))
+    sim$projectedClimateRasters <- list("fooVar" = terra::rast(nlyrs = length(Range)))
     names(sim$projectedClimateRasters[[1]]) <- paste0("year",Range)
   }
   
